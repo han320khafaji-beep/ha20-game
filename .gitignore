@@ -1,0 +1,6 @@
+node_modules/
+*.log
+.env
+.DS_Store
+start-game.bat
+start-game.vbs

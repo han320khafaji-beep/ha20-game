@@ -1,0 +1,37 @@
+{
+  "name": "H&A - لعبة الرسم والتخمين",
+  "short_name": "H&A",
+  "description": "لعبة الرسم والتخمين اللحظية لشخصين — العب عبر WebSockets على أي جهاز.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0d0618",
+  "theme_color": "#241346",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "العب مباشرة",
+      "short_name": "العب",
+      "description": "افتح اللعبة للعب سريع",
+      "url": "/",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

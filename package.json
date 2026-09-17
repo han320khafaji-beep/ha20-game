@@ -1,0 +1,17 @@
+{
+  "name": "hna-game",
+  "version": "1.0.0",
+  "description": "H&A - لعبة الرسم والتخمين اللحظية",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["game", "drawing", "guess"],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.2.1",
+    "socket.io": "^4.8.3"
+  }
+}
