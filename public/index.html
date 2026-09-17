@@ -651,14 +651,16 @@
             zoomAround((L.w / 2 - view.tx) / view.zoom * (canvas.width / L.w), (L.h / 2 - view.ty) / view.zoom * (canvas.height / L.h), factor);
         }
 
-        function posFromEvent(e) {
+        function posFromClient(cx, cy) {
             const L = layoutInfo();
-            const cx = e.clientX - L.left;
-            const cy = e.clientY - L.top;
             return {
-                x: (cx - view.tx) / view.zoom * (canvas.width / L.w),
-                y: (cy - view.ty) / view.zoom * (canvas.height / L.h)
+                x: (cx - L.left - view.tx) / view.zoom * (canvas.width / L.w),
+                y: (cy - L.top - view.ty) / view.zoom * (canvas.height / L.h)
             };
+        }
+
+        function posFromEvent(e) {
+            return posFromClient(e.clientX, e.clientY);
         }
 
         function dist(a, b) { return Math.hypot(b.x - a.x, b.y - a.y); }
@@ -675,7 +677,26 @@
             canvas.style.cursor = erasing ? 'cell' : 'crosshair';
         }
 
+        function strokeLine(from, to) {
+            const erasing = tool === 'eraser';
+            ctx.lineWidth = curWidth();
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.globalCompositeOperation = erasing ? 'destination-out' : 'source-over';
+            ctx.strokeStyle = erasing ? '#000' : curColor();
+            ctx.beginPath();
+            ctx.moveTo(from.x, from.y);
+            ctx.lineTo(to.x, to.y);
+            ctx.stroke();
+            ctx.globalCompositeOperation = 'source-over';
+            socket.emit('draw', {
+                roomId: room.id, fromX: from.x, fromY: from.y,
+                toX: to.x, toY: to.y, color: erasing ? 'erase' : curColor(), width: curWidth()
+            });
+        }
+
         canvas.addEventListener('pointerdown', (e) => {
+            if (e.pointerType === 'touch') return;
             pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
             if (pointers.size === 2) {
                 drawing = false;
@@ -684,18 +705,18 @@
                 return;
             }
             if (!canDraw()) { e.preventDefault(); return; }
-            canvas.setPointerCapture(e.pointerId);
+            try { canvas.setPointerCapture(e.pointerId); } catch (err) { }
             drawing = true;
             const p = posFromEvent(e);
             lastX = p.x; lastY = p.y;
         });
 
         canvas.addEventListener('pointermove', (e) => {
-            if (!pointers.has(e.pointerId)) pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-            pointers.get(e.pointerId).x = e.clientX;
-            pointers.get(e.pointerId).y = e.clientY;
-
+            if (e.pointerType === 'touch') return;
             if (pointers.size >= 2 && pinch) {
+                if (!pointers.has(e.pointerId)) pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+                pointers.get(e.pointerId).x = e.clientX;
+                pointers.get(e.pointerId).y = e.clientY;
                 const [a, b] = [...pointers.values()];
                 const d = dist(a, b), m = mid(a, b);
                 const S = canvas.width / layoutInfo().w;
@@ -707,29 +728,59 @@
                 applyView();
                 return;
             }
-
             if (!drawing) return;
             const p = posFromEvent(e);
-            const erasing = tool === 'eraser';
-            ctx.lineWidth = curWidth();
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.globalCompositeOperation = erasing ? 'destination-out' : 'source-over';
-            ctx.strokeStyle = erasing ? '#000' : curColor();
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            ctx.lineTo(p.x, p.y);
-            ctx.stroke();
-            ctx.globalCompositeOperation = 'source-over';
-            socket.emit('draw', {
-                roomId: room.id, fromX: lastX, fromY: lastY,
-                toX: p.x, toY: p.y, color: erasing ? 'erase' : curColor(), width: curWidth()
-            });
+            strokeLine({ x: lastX, y: lastY }, p);
             lastX = p.x; lastY = p.y;
         });
 
-        canvas.addEventListener('pointerup', (e) => { pointers.delete(e.pointerId); drawing = false; });
-        canvas.addEventListener('pointercancel', (e) => { pointers.delete(e.pointerId); drawing = false; });
+        canvas.addEventListener('pointerup', (e) => { if (e.pointerType !== 'touch') pointers.delete(e.pointerId); drawing = false; });
+        canvas.addEventListener('pointercancel', (e) => { if (e.pointerType !== 'touch') pointers.delete(e.pointerId); drawing = false; });
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (e.touches.length === 2) {
+                drawing = false;
+                pinch = null;
+                const [a, b] = e.touches;
+                pinch = {
+                    d0: dist({ x: a.clientX, y: a.clientY }, { x: b.clientX, y: b.clientY }),
+                    m0: mid({ x: a.clientX, y: a.clientY }, { x: b.clientX, y: b.clientY }),
+                    zoom0: view.zoom, tx0: view.tx, ty0: view.ty
+                };
+                return;
+            }
+            if (!canDraw()) { pinch = null; return; }
+            drawing = true;
+            const p = posFromEvent(e.touches[0]);
+            lastX = p.x; lastY = p.y;
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (e.touches.length >= 2 && pinch) {
+                const [a, b] = e.touches;
+                const d = dist({ x: a.clientX, y: a.clientY }, { x: b.clientX, y: b.clientY });
+                const m = mid({ x: a.clientX, y: a.clientY }, { x: b.clientX, y: b.clientY });
+                const S = canvas.width / layoutInfo().w;
+                const iMx = (pinch.m0.x - pinch.tx0) / pinch.zoom0 * S;
+                const iMy = (pinch.m0.y - pinch.ty0) / pinch.zoom0 * S;
+                view.zoom = Math.min(5, Math.max(0.5, pinch.zoom0 * (d / pinch.d0)));
+                view.tx = m.x - iMx * view.zoom / S;
+                view.ty = m.y - iMy * view.zoom / S;
+                applyView();
+                return;
+            }
+            if (!drawing) return;
+            const t = e.touches[0];
+            if (!t) return;
+            const p = posFromEvent(t);
+            strokeLine({ x: lastX, y: lastY }, p);
+            lastX = p.x; lastY = p.y;
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', (e) => { e.preventDefault(); drawing = false; pinch = null; });
+        canvas.addEventListener('touchcancel', () => { drawing = false; pinch = null; });
 
         canvas.addEventListener('wheel', (e) => {
             e.preventDefault();
