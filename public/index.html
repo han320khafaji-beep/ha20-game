@@ -284,7 +284,7 @@
                     <input type="text" id="accName" maxlength="20" placeholder="اسم المستخدم" autocomplete="username">
                 </div>
                 <div class="account-row">
-                    <input type="email" id="accEmail" placeholder="البريد الإلكتروني" autocomplete="email">
+                    <input type="email" id="accEmail" placeholder="اسم المستخدم أو البريد" autocomplete="email">
                 </div>
                 <div class="account-row">
                     <input type="password" id="accPass" placeholder="كلمة المرور" autocomplete="current-password">
@@ -535,7 +535,8 @@
                 const { data, error } = await sb.from('profiles').upsert({
                     id: myUser.id,
                     username: myUser.name,
-                    display_name: myUser.name
+                    display_name: myUser.name,
+                    email: myUser.email || ''
                 }).select('id');
                 if (error) console.warn('upsert profile', error.message);
             } catch (e) {}
@@ -580,13 +581,19 @@
 
         async function loginAccount() {
             if (!sb) { accMsg('نظام الحسابات غير متاح حالياً', false); return; }
-            const email = $('accEmail').value.trim();
+            const login = $('accEmail').value.trim();
             const pass = $('accPass').value;
-            if (!email || !pass) return accMsg('اكتب البريد وكلمة المرور', false);
+            if (!login || !pass) return accMsg('اكتب اسم المستخدم أو البريد وكلمة المرور', false);
             accMsg('جارٍ تسجيل الدخول...');
             try {
+                let email = login;
+                if (login.indexOf('@') === -1) {
+                    const { data: found } = await sb.from('profiles').select('email').eq('username', login).maybeSingle();
+                    if (!found || !found.email) return accMsg('لا يوجد حساب بهذا الاسم المستخدم', false);
+                    email = found.email;
+                }
                 const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-                if (error) return accMsg('فشل الدخول: تحقق من البريد وكلمة المرور', false);
+                if (error) return accMsg('فشل الدخول: تأكد من كتابة الاسم/البريد وكلمة المرور', false);
                 const name = (data.user && data.user.user_metadata && data.user.user_metadata.name) || email.split('@')[0];
                 myUser = { id: data.user.id, email, name };
                 await ensureProfile();
