@@ -83,6 +83,12 @@
         .msg.error { color: var(--err); }
         .msg.ok { color: var(--ok); }
 
+        .account-bar { margin-bottom: 12px; padding: 10px 12px; border-radius: 12px; background: rgba(165, 91, 255, .10); border: 1px dashed var(--purple); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+        .account-bar b { color: var(--purple); }
+        .account-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; padding: 12px; border-radius: 12px; background: rgba(165, 91, 255, .06); border: 1px solid var(--line); }
+        .account-row { display: flex; gap: 8px; }
+        .account-row .btn { flex: 1; }
+
         .topbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
         .chips { display: flex; gap: 8px; flex-wrap: wrap; }
         .chip {
@@ -263,6 +269,35 @@
 
     <section id="screen-join" class="screen active">
         <div class="card">
+            <div class="account-bar" id="accountBar">
+                <div id="guestState">
+                    <span>👋 <b>العب بدون حساب</b> — سجل لتحفظ فوزك ونقاطك</span>
+                    <button class="btn-ghost-small" onclick="toggleAccountForm()">تسجيل دخول / إنشاء حساب</button>
+                </div>
+                <div id="userState" style="display:none">
+                    <span>👤 <b id="accountChipUser">—</b></span>
+                    <button class="btn-ghost-small" onclick="logoutAccount()">تسجيل الخروج</button>
+                </div>
+            </div>
+            <div id="accountForm" style="display:none">
+                <div class="account-row">
+                    <input type="text" id="accName" maxlength="20" placeholder="اسم المستخدم" autocomplete="username">
+                </div>
+                <div class="account-row">
+                    <input type="email" id="accEmail" placeholder="البريد الإلكتروني" autocomplete="email">
+                </div>
+                <div class="account-row">
+                    <input type="password" id="accPass" placeholder="كلمة المرور" autocomplete="current-password">
+                </div>
+                <div class="account-row">
+                    <button class="btn btn-primary" onclick="signupAccount()">إنشاء حساب</button>
+                    <button class="btn btn-orange" onclick="loginAccount()">تسجيل دخول</button>
+                </div>
+                <div class="account-row">
+                    <button class="btn btn-ghost" style="flex:1" onclick="cancelAccountForm()">إلغاء</button>
+                </div>
+                <div id="accMsg" class="msg"></div>
+            </div>
             <h2>أنشئ غرفة أو انضم</h2>
             <p>اكتب اسمك ورمز الغرفة، وادخل أنت وصديقك بنفس الرمز لتلعبا مباشرة.</p>
             <div class="join-row">
@@ -379,6 +414,7 @@
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // ================== الصوت ==================
         let audioCtx = null;
@@ -451,6 +487,110 @@
             canvas.dataset.color = SWATCHES[0];
         }
 
+        // ================== الحساب + Supabase ==================
+        const SUPABASE_URL = 'https://ozhcocsgoftzdijzimlv.supabase.co';
+        const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im96aGNvY3Nnb2Z0emRpanppbWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzNDE0NTYsImV4cCI6MjEwMzkxNzQ1Nn0.YiR_D1-XqsuXJxeF5s0dH4XLKQd3wunyr7MbYnWBdYc';
+        let sb = null;
+        let myUser = null;  // { id, email, name } یا null للضيف
+        try { sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON); } catch (e) { sb = null; console.warn('Supabase غير متاح', e); }
+
+        function accountOK() { return !!(sb && myUser); }
+
+        function renderAccountUI() {
+            const guest = $('guestState'), user = $('userState'), form = $('accountForm');
+            if (!accountOK()) {
+                guest.style.display = '';
+                user.style.display = 'none';
+                form.style.display = 'none';
+            } else {
+                guest.style.display = 'none';
+                user.style.display = '';
+                $('accountChipUser').textContent = myUser.name || myUser.email;
+                $('accMsg').textContent = '';
+            }
+        }
+
+        function toggleAccountForm() {
+            const f = $('accountForm');
+            f.style.display = f.style.display === 'none' ? '' : 'none';
+            if (f.style.display !== 'none') $('accEmail').focus();
+        }
+        function cancelAccountForm() { $('accountForm').style.display = 'none'; }
+
+        function accMsg(t, ok) { const el = $('accMsg'); el.textContent = t; el.className = 'msg ' + (ok ? 'ok' : 'error'); }
+
+        async function refreshUserEmail() {
+            if (!sb) return;
+            try {
+                const { data: { user } } = await sb.auth.getUser();
+                if (user) myUser = { id: user.id, email: user.email, name: (user.user_metadata && user.user_metadata.name) || user.email.split('@')[0] };
+                else myUser = null;
+            } catch (e) { myUser = null; }
+            renderAccountUI();
+        }
+
+        async function ensureProfile() {
+            if (!sb || !myUser) return;
+            try {
+                const { data, error } = await sb.from('profiles').upsert({
+                    id: myUser.id,
+                    username: myUser.name,
+                    display_name: myUser.name
+                }).select('id');
+                if (error) console.warn('upsert profile', error.message);
+            } catch (e) {}
+        }
+
+        async function signupAccount() {
+            if (!sb) { accMsg('نظام الحسابات غير متاح حالياً', false); return; }
+            const name = $('accName').value.trim();
+            const email = $('accEmail').value.trim();
+            const pass = $('accPass').value;
+            if (name.length < 2) return accMsg('اكتب اسم مستخدم (حرفان على الأقل)', false);
+            if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return accMsg('اكتب بريداً إلكترونياً صحيحاً', false);
+            if (pass.length < 6) return accMsg('كلمة المرور 6 أحرف على الأقل', false);
+            accMsg('جارٍ إنشاء الحساب...');
+            try {
+                const { data, error } = await sb.auth.signUp({ email, password: pass, options: { data: { name } } });
+                if (error) return accMsg('فشل الإنشاء: ' + error.message, false);
+                if (!data.session) {
+                    accMsg('تم إنشاؤك! تأكد من بريدك الإلكتروني (رسالة تفعيل أُرسلت لـ ' + email + ') ثم سجّل الدخول.');
+                    return;
+                }
+                myUser = { id: data.user.id, email: data.user.email, name };
+                await ensureProfile();
+                $('nameInput').value = name;
+                renderAccountUI();
+                accMsg('تم إنشاء حسابك! أهلاً ' + name, true);
+            } catch (e) { accMsg('تعذر إنشاء الحساب، حاول مجدداً', false); }
+        }
+
+        async function loginAccount() {
+            if (!sb) { accMsg('نظام الحسابات غير متاح حالياً', false); return; }
+            const email = $('accEmail').value.trim();
+            const pass = $('accPass').value;
+            if (!email || !pass) return accMsg('اكتب البريد وكلمة المرور', false);
+            accMsg('جارٍ تسجيل الدخول...');
+            try {
+                const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+                if (error) return accMsg('فشل الدخول: تحقق من البريد وكلمة المرور', false);
+                const name = (data.user && data.user.user_metadata && data.user.user_metadata.name) || email.split('@')[0];
+                myUser = { id: data.user.id, email, name };
+                await ensureProfile();
+                $('nameInput').value = name;
+                renderAccountUI();
+                accMsg('مرحباً بعودتك ' + name + '!', true);
+            } catch (e) { accMsg('تعذر تسجيل الدخول، حاول مجدداً', false); }
+        }
+
+        async function logoutAccount() {
+            if (sb) { try { await sb.auth.signOut(); } catch (e) {} }
+            myUser = null;
+            renderAccountUI();
+            accMsg('سجّلت خروجك. يمكنك اللعب كضيف بدون حفظ النقاط.');
+        }
+
+        refreshUserEmail();
         // ================== الشاشات ==================
         function showMsg(text, type) {
             const el = $('joinMsg');
