@@ -271,7 +271,7 @@
         <div class="card">
             <div class="account-bar" id="accountBar">
                 <div id="guestState">
-                    <span>👋 <b>العب بدون حساب</b> — سجل لتحفظ فوزك ونقاطك</span>
+                    <span>👋 سجّل <b>لتتبّع فوزك ونقاطك</b></span>
                     <button class="btn-ghost-small" onclick="toggleAccountForm()">تسجيل دخول / إنشاء حساب</button>
                 </div>
                 <div id="userState" style="display:none">
@@ -587,7 +587,7 @@
             if (sb) { try { await sb.auth.signOut(); } catch (e) {} }
             myUser = null;
             renderAccountUI();
-            accMsg('سجّلت خروجك. يمكنك اللعب كضيف بدون حفظ النقاط.');
+            accMsg('سجّلت خروجك. يمكنك هذا بتسجيل الدخول مجدداً لحفظ فوزك ونقاطك.');
         }
 
         refreshUserEmail();
