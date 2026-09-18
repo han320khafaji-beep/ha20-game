@@ -541,6 +541,19 @@
             } catch (e) {}
         }
 
+        async function recordResult(won, pts) {
+            if (!accountOK() || !myUser) return;
+            try {
+                const { data: row } = await sb.from('profiles').select('wins,losses,games_played,total_points,best_points').eq('id', myUser.id).single();
+                const p = row || { wins: 0, losses: 0, games_played: 0, total_points: 0, best_points: 0 };
+                const wins = (p.wins || 0) + (won ? 1 : 0);
+                const losses = (p.losses || 0) + (won ? 0 : 1);
+                const total = (p.total_points || 0) + (pts || 0);
+                const best = Math.max(p.best_points || 0, total);
+                await sb.from('profiles').update({ wins, losses, games_played: (p.games_played || 0) + 1, total_points: total, best_points: best }).eq('id', myUser.id);
+            } catch (e) { console.warn('record result', e.message); }
+        }
+
         async function signupAccount() {
             if (!sb) { accMsg('نظام الحسابات غير متاح حالياً', false); return; }
             const name = $('accName').value.trim();
@@ -1138,6 +1151,7 @@
             scores = data.scores || scores;
             names = data.names || names;
             const iWon = data.guesserId === myId;
+            if (accountOK()) recordResult(iWon, iWon ? 1 : 0);
             $('overlayIcon').textContent = iWon ? '🥳' : '😅';
             $('overlayTitle').textContent = iWon ? 'مبروك! إجابة صحيحة' : 'خصمك عرف الكلمة!';
             $('overlayWord').textContent = data.word;
@@ -1157,6 +1171,7 @@
             scores = data.scores || scores;
             names = data.names || names;
             const iAmDrawer = room.role === 'drawer';
+            if (accountOK()) recordResult(iAmDrawer, iAmDrawer ? 1 : 0);
             $('overlayIcon').textContent = iAmDrawer ? '😏' : '⏰';
             $('overlayTitle').textContent = 'انتهى الوقت!';
             $('overlayWord').textContent = data.word;
