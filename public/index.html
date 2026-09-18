@@ -284,9 +284,6 @@
                     <input type="text" id="accName" maxlength="20" placeholder="اسم المستخدم" autocomplete="username">
                 </div>
                 <div class="account-row">
-                    <input type="email" id="accEmail" placeholder="اسم المستخدم أو البريد" autocomplete="email">
-                </div>
-                <div class="account-row">
                     <input type="password" id="accPass" placeholder="كلمة المرور" autocomplete="current-password">
                 </div>
                 <div class="account-row">
@@ -513,7 +510,7 @@
         function toggleAccountForm() {
             const f = $('accountForm');
             f.style.display = f.style.display === 'none' ? '' : 'none';
-            if (f.style.display !== 'none') $('accEmail').focus();
+            if (f.style.display !== 'none') $('accName').focus();
         }
         function cancelAccountForm() { $('accountForm').style.display = 'none'; }
 
@@ -558,17 +555,18 @@
         async function signupAccount() {
             if (!sb) { accMsg('نظام الحسابات غير متاح حالياً', false); return; }
             const name = $('accName').value.trim();
-            const email = $('accEmail').value.trim();
             const pass = $('accPass').value;
             if (name.length < 2) return accMsg('اكتب اسم مستخدم (حرفان على الأقل)', false);
-            if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return accMsg('اكتب بريداً إلكترونياً صحيحاً', false);
             if (pass.length < 6) return accMsg('كلمة المرور 6 أحرف على الأقل', false);
             accMsg('جارٍ إنشاء الحساب...');
             try {
-                const { data, error } = await sb.auth.signUp({ email, password: pass, options: { data: { name } } });
+                const { data: exists } = await sb.from('profiles').select('id').eq('username', name).maybeSingle();
+                if (exists) return accMsg('اسم المستخدم مستخدم بالفعل، اختر اسماً آخر', false);
+                const hiddenEmail = generateEmailFor(name);
+                const { data, error } = await sb.auth.signUp({ email: hiddenEmail, password: pass, options: { data: { name } } });
                 if (error) return accMsg('فشل الإنشاء: ' + error.message, false);
                 if (!data.session) {
-                    accMsg('تم إنشاؤك! تأكد من بريدك الإلكتروني (رسالة تفعيل أُرسلت لـ ' + email + ') ثم سجّل الدخول.');
+                    accMsg('تعذر إنشاء الحساب الآن، حاول مجدداً.');
                     return;
                 }
                 myUser = { id: data.user.id, email: data.user.email, name };
@@ -579,27 +577,29 @@
             } catch (e) { accMsg('تعذر إنشاء الحساب، حاول مجدداً', false); }
         }
 
+        function generateEmailFor(name) {
+            const base = (name || '').toLowerCase().replace(/[^a-z0-9]/g, '') || 'user';
+            const rand = Math.random().toString(36).slice(2, 8);
+            return 'hna.' + base + '.' + rand + '@gmail.com';
+        }
+
         async function loginAccount() {
             if (!sb) { accMsg('نظام الحسابات غير متاح حالياً', false); return; }
-            const login = $('accEmail').value.trim();
+            const name = $('accName').value.trim();
             const pass = $('accPass').value;
-            if (!login || !pass) return accMsg('اكتب اسم المستخدم أو البريد وكلمة المرور', false);
+            if (!name || !pass) return accMsg('اكتب اسم المستخدم وكلمة المرور', false);
             accMsg('جارٍ تسجيل الدخول...');
             try {
-                let email = login;
-                if (login.indexOf('@') === -1) {
-                    const { data: found } = await sb.from('profiles').select('email').eq('username', login).maybeSingle();
-                    if (!found || !found.email) return accMsg('لا يوجد حساب بهذا الاسم المستخدم', false);
-                    email = found.email;
-                }
-                const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-                if (error) return accMsg('فشل الدخول: تأكد من كتابة الاسم/البريد وكلمة المرور', false);
-                const name = (data.user && data.user.user_metadata && data.user.user_metadata.name) || email.split('@')[0];
-                myUser = { id: data.user.id, email, name };
+                const { data: found } = await sb.from('profiles').select('email').eq('username', name).maybeSingle();
+                if (!found || !found.email) return accMsg('لا يوجد حساب بهذا الاسم المستخدم', false);
+                const { data, error } = await sb.auth.signInWithPassword({ email: found.email, password: pass });
+                if (error) return accMsg('فشل الدخول: تأكد من اسم المستخدم وكلمة المرور', false);
+                const uname = (data.user && data.user.user_metadata && data.user.user_metadata.name) || name;
+                myUser = { id: data.user.id, email: found.email, name: uname };
                 await ensureProfile();
-                $('nameInput').value = name;
+                $('nameInput').value = uname;
                 renderAccountUI();
-                accMsg('مرحباً بعودتك ' + name + '!', true);
+                accMsg('مرحباً بعودتك ' + uname + '!', true);
             } catch (e) { accMsg('تعذر تسجيل الدخول، حاول مجدداً', false); }
         }
 
