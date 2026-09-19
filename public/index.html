@@ -88,6 +88,8 @@
         .account-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; padding: 12px; border-radius: 12px; background: rgba(165, 91, 255, .06); border: 1px solid var(--line); }
         .account-row { display: flex; gap: 8px; }
         .account-row .btn { flex: 1; }
+        .account-divider { text-align: center; color: var(--muted); font-size: 12px; padding: 2px 0; }
+        .btn-google { background: #fff; color: #333; border: 1px solid #ddd; }
 
         .topbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
         .chips { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -289,6 +291,10 @@
                 <div class="account-row">
                     <button class="btn btn-primary" onclick="signupAccount()">إنشاء حساب</button>
                     <button class="btn btn-orange" onclick="loginAccount()">تسجيل دخول</button>
+                </div>
+                <div class="account-divider">أو</div>
+                <div class="account-row">
+                    <button class="btn btn-google" onclick="loginGoogle()">تسجيل الدخول بحساب جوجل</button>
                 </div>
                 <div class="account-row">
                     <button class="btn btn-ghost" style="flex:1" onclick="cancelAccountForm()">إلغاء</button>
@@ -520,7 +526,7 @@
             if (!sb) return;
             try {
                 const { data: { user } } = await sb.auth.getUser();
-                if (user) myUser = { id: user.id, email: user.email, name: (user.user_metadata && user.user_metadata.name) || user.email.split('@')[0] };
+                if (user) myUser = { id: user.id, email: user.email, name: (user.user_metadata && (user.user_metadata.name || user.user_metadata.full_name)) || user.email.split('@')[0] };
                 else myUser = null;
             } catch (e) { myUser = null; }
             renderAccountUI();
@@ -608,6 +614,18 @@
             myUser = null;
             renderAccountUI();
             accMsg('سجّلت خروجك. يمكنك هذا بتسجيل الدخول مجدداً لحفظ فوزك ونقاطك.');
+        }
+
+        async function loginGoogle() {
+            if (!sb) { accMsg('نظام الحسابات غير متاح حالياً', false); return; }
+            accMsg('جارٍ الاتصال بحساب جوجل...');
+            try {
+                const { error } = await sb.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: { redirectTo: location.origin + location.pathname }
+                });
+                if (error) return accMsg('تعذر فتح جوجل: ' + error.message, false);
+            } catch (e) { accMsg('تعذر فتح نافذة جوجل، حاول مجدداً', false); }
         }
 
         refreshUserEmail();
