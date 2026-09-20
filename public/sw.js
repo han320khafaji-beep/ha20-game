@@ -1,4 +1,4 @@
-const CACHE = 'hna-cache-v10';
+const CACHE = 'hna-cache-v11';
 const ASSETS = [
     './',
     './index.html',

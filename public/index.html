@@ -86,9 +86,18 @@
         .account-bar { margin-bottom: 12px; padding: 10px 12px; border-radius: 12px; background: rgba(165, 91, 255, .10); border: 1px dashed var(--purple); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
         .account-bar b { color: var(--purple); }
         .account-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; padding: 12px; border-radius: 12px; background: rgba(165, 91, 255, .06); border: 1px solid var(--line); }
-        .account-row { display: flex; gap: 8px; }
+.account-row { display: flex; gap: 8px; }
         .account-row .btn { flex: 1; }
-        .account-divider { text-align: center; color: var(--muted); font-size: 12px; padding: 2px 0; }
+        .av-title { font-size: 12px; color: var(--muted); text-align: center; margin: 2px 0 8px; }
+        .av-title small { opacity: .7; }
+        .avatar-picker { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 12px; }
+        .av-opt {
+            width: 42px; height: 42px; border-radius: 12px; cursor: pointer; flex: 0 0 auto;
+            background: var(--panel2); border: 2px solid var(--line); font-size: 22px;
+            display: flex; align-items: center; justify-content: center; transition: .2s;
+        }
+        .av-opt:hover { transform: scale(1.1); border-color: var(--purple); }
+        .av-opt.sel { border-color: var(--purple); background: rgba(165, 91, 255, .18); box-shadow: 0 0 12px rgba(165, 91, 255, .4); }
         .btn-google { background: #fff; color: #333; border: 1px solid #ddd; }
 
         .topbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
@@ -318,6 +327,7 @@
             font-weight: 800; font-size: 17px; color: #fff;
             background: linear-gradient(135deg, var(--h-orange), var(--h-purple3)); border: 2px solid var(--h-purple);
         }
+        .dash-avatar.emoji { font-size: 21px; }
         .uname { font-size: 13px; font-weight: 700; color: var(--h-text2); }
         .caret { color: var(--h-muted); font-size: 10px; }
         .user-drop {
@@ -326,6 +336,9 @@
             overflow: hidden; display: none;
         }
         .user-drop.open { display: block; animation: homeFade .2s ease; }
+        .drop-av { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px; border-top: 1px solid var(--h-line); }
+        .drop-av .av-opt { width: 34px; height: 34px; font-size: 18px; border-radius: 10px; background: var(--h-card1); border-color: var(--h-line); }
+        .drop-av .av-opt.sel { border-color: var(--h-purple); background: rgba(139,61,255,.18); }
         .drop-item { padding: 11px 14px; font-size: 13px; color: var(--h-text2); cursor: pointer; display: flex; align-items: center; gap: 8px; }
         .drop-item:hover { background: rgba(139,61,255,.12); color: var(--h-text); }
         .drop-item.logout { color: #ff6b7d; }
@@ -401,7 +414,7 @@
         .lb-row.me { border-color: var(--h-purple); background: rgba(139,61,255,.10); }
         .rank { width: 26px; text-align: center; font-weight: 900; color: var(--h-muted); }
         .rank.r1 { color: #FFD32A; } .rank.r2 { color: #CFD6E6; } .rank.r3 { color: #E8924D; }
-        .lb-av { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; background: linear-gradient(135deg, var(--h-orange), var(--h-purple3)); }
+        .lb-av { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 17px; color: #fff; background: linear-gradient(135deg, var(--h-orange), var(--h-purple3)); }
         .lb-name { flex: 1; font-size: 14px; font-weight: 700; color: var(--h-text); }
         .lb-name small { display: block; font-weight: 400; color: var(--h-muted); font-size: 11px; }
         .lb-pts { text-align: left; font-size: 12px; color: var(--h-muted); }
@@ -476,6 +489,8 @@
                 <div class="account-row">
                     <input type="password" id="accPass" placeholder="كلمة المرور" autocomplete="current-password">
                 </div>
+                <div class="av-title">🎨 اختر صورتك <small>رمزي</small></div>
+                <div class="avatar-picker" id="avatarPicker"></div>
                 <div class="account-row">
                     <button class="btn btn-primary" onclick="signupAccount()">إنشاء حساب</button>
                     <button class="btn btn-orange" onclick="loginAccount()">تسجيل دخول</button>
@@ -523,6 +538,8 @@
                             <div class="drop-item" onclick="goSection('dashStats')">📊 إحصائياتي</div>
                             <div class="drop-item" onclick="goSection('dashAch')">🏆 إنجازاتي</div>
                             <div class="drop-item" onclick="toggleDashTheme()">🎨 بدّل الثيم</div>
+                            <div class="drop-item" onclick="toggleDropAvatar()">🖼️ تغيير الصورة</div>
+                            <div class="drop-av" id="dropAvatar" style="display:none"></div>
                             <div class="drop-item logout" onclick="logoutFromHome()">🚪 تسجيل الخروج</div>
                         </div>
                     </div>
@@ -769,7 +786,9 @@
         const SUPABASE_URL = 'https://ozhcocsgoftzdijzimlv.supabase.co';
         const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im96aGNvY3Nnb2Z0emRpanppbWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzNDE0NTYsImV4cCI6MjEwMzkxNzQ1Nn0.YiR_D1-XqsuXJxeF5s0dH4XLKQd3wunyr7MbYnWBdYc';
         let sb = null;
-        let myUser = null;  // { id, email, name } یا null للضيف
+        let myUser = null;  // { id, email, name, avatar }
+        const AVATARS = ['😀','😎','🤩','🥳','😺','🐶','🐱','🦊','🐼','🐸','🦁','🐙','🦄','🐸','🚀','🎨','⭐','🎮'];
+        let pickedAvatar = '';
         try { sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON); } catch (e) { sb = null; console.warn('Supabase غير متاح', e); }
 
         function accountOK() { return !!(sb && myUser); }
@@ -797,12 +816,40 @@
 
         function accMsg(t, ok) { const el = $('accMsg'); el.textContent = t; el.className = 'msg ' + (ok ? 'ok' : 'error'); }
 
+        function buildAvatarPicker() {
+            const box = $('avatarPicker');
+            if (!box) return;
+            box.innerHTML = '';
+            AVATARS.forEach((em, i) => {
+                const c = document.createElement('div');
+                c.className = 'av-opt' + (em === pickedAvatar ? ' sel' : '');
+                c.textContent = em;
+                c.onclick = () => {
+                    pickedAvatar = em;
+                    box.querySelectorAll('.av-opt').forEach((x) => x.classList.remove('sel'));
+                    c.classList.add('sel');
+                    if (accountOK() && myUser) {
+                        myUser.avatar = em;
+                        sb.from('profiles').update({ avatar: em }).eq('id', myUser.id).then(() => {});
+                    }
+                };
+                box.appendChild(c);
+            });
+        }
+
+        function applyPickedAvatar() {
+            if (pickedAvatar && myUser) myUser.avatar = pickedAvatar;
+        }
+
         async function refreshUserEmail() {
             if (!sb) return;
             try {
                 const { data: { user } } = await sb.auth.getUser();
-                if (user) myUser = { id: user.id, email: user.email, name: (user.user_metadata && (user.user_metadata.name || user.user_metadata.full_name)) || user.email.split('@')[0] };
-                else myUser = null;
+                if (user) {
+                    myUser = { id: user.id, email: user.email, name: (user.user_metadata && (user.user_metadata.name || user.user_metadata.full_name)) || user.email.split('@')[0], avatar: '' };
+                    const { data: prof } = await sb.from('profiles').select('avatar').eq('id', user.id).maybeSingle();
+                    if (prof && prof.avatar) myUser.avatar = prof.avatar;
+                } else myUser = null;
             } catch (e) { myUser = null; }
             renderAccountUI();
             return !!myUser;
@@ -815,7 +862,8 @@
                     id: myUser.id,
                     username: myUser.name,
                     display_name: myUser.name,
-                    email: myUser.email || ''
+                    email: myUser.email || '',
+                    avatar: myUser.avatar || ''
                 }).select('id');
                 if (error) console.warn('upsert profile', error.message);
             } catch (e) {}
@@ -855,7 +903,8 @@
                     accMsg('تعذر إنشاء الحساب الآن، حاول مجدداً.');
                     return;
                 }
-                myUser = { id: data.user.id, email: data.user.email, name };
+                if (!pickedAvatar) pickedAvatar = AVATARS[Math.floor(Math.random() * AVATARS.length)];
+                myUser = { id: data.user.id, email: data.user.email, name, avatar: pickedAvatar };
                 await ensureProfile();
                 $('nameInput').value = name;
                 renderAccountUI();
@@ -882,7 +931,10 @@
                 const { data, error } = await sb.auth.signInWithPassword({ email: found.email, password: pass });
                 if (error) return accMsg('فشل الدخول: تأكد من اسم المستخدم وكلمة المرور', false);
                 const uname = (data.user && data.user.user_metadata && data.user.user_metadata.name) || name;
-                myUser = { id: data.user.id, email: found.email, name: uname };
+                myUser = { id: data.user.id, email: found.email, name: uname, avatar: '' };
+                const { data: prof } = await sb.from('profiles').select('avatar').eq('id', data.user.id).maybeSingle();
+                if (prof && prof.avatar) myUser.avatar = prof.avatar;
+                applyPickedAvatar();
                 await ensureProfile();
                 $('nameInput').value = uname;
                 renderAccountUI();
@@ -1386,7 +1438,16 @@
         function paintAvatars(name) {
             const els = document.querySelectorAll('.dash-avatar');
             const gr = avatarGrad(name);
-            els.forEach((el) => el.style.background = gr);
+            els.forEach((el) => {
+                el.style.background = gr;
+                if (myUser && myUser.avatar) {
+                    el.classList.add('emoji');
+                    el.textContent = myUser.avatar;
+                } else {
+                    el.classList.remove('emoji');
+                    el.textContent = initialOf(name);
+                }
+            });
         }
 
         function showHomeMsg(t) {
@@ -1398,6 +1459,31 @@
         function toggleUserDrop() {
             const d = $('userDrop');
             if (d) d.classList.toggle('open');
+        }
+        function toggleDropAvatar() {
+            const box = $('dropAvatar');
+            if (!box) return;
+            box.style.display = box.style.display === 'none' ? 'flex' : 'none';
+            if (box.style.display === 'flex') renderDropAvatar();
+        }
+        function renderDropAvatar() {
+            const box = $('dropAvatar');
+            if (!box) return;
+            box.innerHTML = '';
+            AVATARS.forEach((em) => {
+                const c = document.createElement('div');
+                c.className = 'av-opt' + ((myUser && myUser.avatar === em) ? ' sel' : '');
+                c.textContent = em;
+                c.onclick = () => {
+                    pickedAvatar = em;
+                    if (myUser) myUser.avatar = em;
+                    paintAvatars((myUser && myUser.name) || '');
+                    box.querySelectorAll('.av-opt').forEach((x) => x.classList.remove('sel'));
+                    c.classList.add('sel');
+                    if (sb && myUser) sb.from('profiles').update({ avatar: em }).eq('id', myUser.id).then(() => {});
+                };
+                box.appendChild(c);
+            });
         }
         document.addEventListener('click', (e) => {
             const d = $('userDrop');
@@ -1548,7 +1634,7 @@
             box.innerHTML = '<div class="lb-empty">جارٍ تحميل الأبطال...</div>';
             try {
                 const { data, error } = await sb.from('profiles')
-                    .select('username,display_name,wins,total_points,games_played')
+                    .select('username,display_name,wins,total_points,games_played,avatar')
                     .not('username', 'is', null)
                     .order('total_points', { ascending: false })
                     .limit(6);
@@ -1558,11 +1644,11 @@
                 const ranks = ['r1', 'r2', 'r3', '', '', ''];
                 box.innerHTML = list.map((p, i) => {
                     const nm = p.display_name || p.username;
-                    const initial = initialOf(nm);
+                    const av = p.avatar || initialOf(nm);
                     const me = myUser && p.username === (myUser.name || '');
                     return '<div class="lb-row' + (me ? ' me' : '') + '">' +
                         '<span class="rank ' + (ranks[i] || '') + '">' + (i + 1) + '</span>' +
-                        '<span class="lb-av" style="background:' + avatarGrad(nm) + '">' + initial + '</span>' +
+                        '<span class="lb-av" style="background:' + avatarGrad(nm) + '">' + av + '</span>' +
                         '<span class="lb-name">' + escapeHtml(nm) + (me ? ' (أنت)' : '') + '<small>' + (p.wins || 0) + ' فوزاً · ' + (p.games_played || 0) + ' لعبة</small></span>' +
                         '<span class="lb-pts"><b>' + fmtNum(p.total_points || 0) + '</b>نقطة</span>' +
                         '</div>';
@@ -1793,6 +1879,7 @@
 
         // ================== الإعداد ==================
         buildSwatches();
+        buildAvatarPicker();
         resetCanvas();
         resetView();
 

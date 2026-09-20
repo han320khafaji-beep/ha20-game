@@ -16,6 +16,7 @@ create table if not exists public.profiles (
   current_streak int not null default 0,
   best_streak int not null default 0,
   drawn_words int not null default 0,
+  avatar text not null default '',
   created_at timestamptz not null default now()
 );
 
@@ -60,3 +61,4 @@ create policy "games_insert_any" on public.games
 alter table public.profiles add column if not exists current_streak int not null default 0;
 alter table public.profiles add column if not exists best_streak int not null default 0;
 alter table public.profiles add column if not exists drawn_words int not null default 0;
+alter table public.profiles add column if not exists avatar text not null default '';
