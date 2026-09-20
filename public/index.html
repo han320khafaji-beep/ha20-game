@@ -260,6 +260,188 @@
             .topbar { flex-direction: column; align-items: stretch; text-align: center; }
             .status { text-align: center; }
         }
+    /* ================== داشبورد الرئيسية ================== */
+        body.on-home .app-header { display: none; }
+        #screen-home {
+            --h-bg1: #080711; --h-bg2: #0D0A18; --h-card1: #121022; --h-card2: #17132A;
+            --h-purple: #8B3DFF; --h-purple2: #9B4DFF; --h-purple3: #A855F7; --h-lpurple: #C084FC;
+            --h-text: #FFFFFF; --h-text2: #D8D2E8; --h-muted: #9189A8; --h-line: rgba(139,61,255,.22);
+            --h-ok: #36E0A0; --h-orange: #FF8C1A;
+        }
+        #screen-home.light {
+            --h-bg1: #f6f4ff; --h-bg2: #ece7ff; --h-card1: #ffffff; --h-card2: #f1edff;
+            --h-text: #1c1330; --h-text2: #3a2e5c; --h-muted: #7d71a0; --h-line: rgba(120,80,200,.25);
+            --h-purple: #8B3DFF; --h-purple2: #9B4DFF; --h-purple3: #A855F7; --h-lpurple: #7a2fd6;
+        }
+        #screen-home {
+            background:
+                radial-gradient(900px 460px at 85% -10%, rgba(139,61,255,.22), transparent 60%),
+                radial-gradient(700px 380px at 5% 110%, rgba(255,140,26,.10), transparent 60%),
+                linear-gradient(180deg, var(--h-bg1), var(--h-bg2) 55%, var(--h-bg1));
+            background-attachment: fixed;
+            min-height: 100dvh; color: var(--h-text);
+            animation: homeFade .5s ease;
+        }
+        @keyframes homeFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+        .dash-header {
+            position: sticky; top: 0; z-index: 40; display: flex; align-items: center; justify-content: space-between;
+            gap: 12px; padding: 12px 16px;
+            background: rgba(8,7,17,.82); backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--h-line);
+        }
+        #screen-home.light .dash-header { background: rgba(255,255,255,.85); }
+        .dash-brand { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .dash-logo {
+            width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 19px; color: #fff;
+            background: linear-gradient(135deg, var(--h-purple), #d78bff);
+            box-shadow: 0 0 16px rgba(139,61,255,.55);
+        }
+        .dash-brand b { font-size: 15px; letter-spacing: 1px; }
+        #screen-home.light .dash-brand b { color: var(--h-text); }
+        .dash-brand small { display: block; color: var(--h-muted); font-size: 10px; margin-top: -2px; }
+        .dash-header-right { display: flex; align-items: center; gap: 8px; }
+        .dash-icon-btn {
+            width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--h-line); cursor: pointer;
+            background: var(--h-card1); color: var(--h-text2); font-size: 16px;
+            display: flex; align-items: center; justify-content: center; transition: .2s;
+        }
+        .dash-icon-btn:hover { border-color: var(--h-purple); box-shadow: 0 0 12px rgba(139,61,255,.4); }
+        .user-chip {
+            display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 6px; border-radius: 999px;
+            position: relative; transition: background .2s;
+        }
+        .user-chip:hover { background: var(--h-card1); }
+        .dash-avatar {
+            width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 17px; color: #fff;
+            background: linear-gradient(135deg, var(--h-orange), var(--h-purple3)); border: 2px solid var(--h-purple);
+        }
+        .uname { font-size: 13px; font-weight: 700; color: var(--h-text2); }
+        .caret { color: var(--h-muted); font-size: 10px; }
+        .user-drop {
+            position: absolute; top: 46px; left: 0; min-width: 160px; z-index: 60;
+            background: var(--h-card2); border: 1px solid var(--h-line); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.5);
+            overflow: hidden; display: none;
+        }
+        .user-drop.open { display: block; animation: homeFade .2s ease; }
+        .drop-item { padding: 11px 14px; font-size: 13px; color: var(--h-text2); cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .drop-item:hover { background: rgba(139,61,255,.12); color: var(--h-text); }
+        .drop-item.logout { color: #ff6b7d; }
+
+        .dash-body { display: flex; gap: 20px; max-width: 1180px; margin: 0 auto; padding: 18px 16px 100px; align-items: flex-start; }
+        .dash-side {
+            width: 210px; flex: 0 0 auto; position: sticky; top: 74px;
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        .dash-nav {
+            display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px;
+            color: var(--h-muted); font-size: 14px; font-weight: 600; cursor: pointer;
+            border: 1px solid transparent; transition: .2s;
+        }
+        .dash-nav:hover { color: var(--h-text2); background: var(--h-card1); }
+        .dash-nav.active {
+            background: linear-gradient(135deg, var(--h-purple), var(--h-purple2)); color: #fff;
+            box-shadow: 0 0 18px rgba(139,61,255,.5);
+        }
+        .dash-nav .nic { font-size: 16px; width: 22px; text-align: center; }
+
+        .dash-main { flex: 1; min-width: 0; }
+        .sec-title { font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: space-between; margin: 20px 0 10px; color: var(--h-text2); }
+        .sec-title small { color: var(--h-muted); font-size: 11px; font-weight: 400; }
+
+        .h-card { background: linear-gradient(180deg, var(--h-card1), var(--h-card2)); border: 1px solid var(--h-line); border-radius: 16px; padding: 18px; transition: transform .2s, box-shadow .2s; }
+        #screen-home.light .h-card { background: linear-gradient(180deg, var(--h-card1), var(--h-card2)); }
+        .h-card:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(139,61,255,.18); }
+
+        .welcome { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+        .welcome .dash-avatar { width: 64px; height: 64px; font-size: 27px; }
+        .welcome-info { flex: 1; min-width: 200px; }
+        .welcome-info h2 { font-size: 21px; color: var(--h-text); }
+        .welcome-info h2 span { color: var(--h-lpurple); }
+        #screen-home.light .welcome-info h2 span { color: var(--h-purple); }
+        .welcome-info p { color: var(--h-muted); font-size: 13px; margin-top: 5px; line-height: 1.6; }
+        .welcome-xp { text-align: left; min-width: 150px; }
+        .level-badge {
+            display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px;
+            background: linear-gradient(135deg, rgba(139,61,255,.25), rgba(168,85,247,.15));
+            border: 1px solid var(--h-purple); font-size: 13px; font-weight: 800; color: var(--h-lpurple);
+        }
+        #screen-home.light .level-badge { color: var(--h-purple); }
+        .xp-bar { margin-top: 10px; height: 9px; background: var(--h-bg2); border-radius: 999px; overflow: hidden; border: 1px solid var(--h-line); }
+        .xp-fill { height: 100%; width: 0; border-radius: 999px; background: linear-gradient(90deg, var(--h-purple), var(--h-lpurple)); box-shadow: 0 0 12px var(--h-purple); transition: width 1.2s ease; }
+        .xp-txt { font-size: 11px; color: var(--h-muted); margin-top: 5px; }
+
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+        .stat { text-align: center; }
+        .stat .sic { font-size: 22px; }
+        .stat b { display: block; font-size: 23px; margin: 6px 0 2px; color: var(--h-text); }
+        .stat span { font-size: 12px; color: var(--h-muted); }
+
+        .play-card {
+            margin-top: 16px; position: relative; overflow: hidden;
+            background: linear-gradient(135deg, rgba(139,61,255,.25), rgba(13,10,24,.6) 60%, rgba(255,140,26,.12)) !important;
+            border-color: var(--h-purple);
+        }
+        #screen-home.light .play-card { background: linear-gradient(135deg, rgba(139,61,255,.18), rgba(255,255,255,.5) 60%, rgba(255,140,26,.10)) !important; }
+        .play-card h3 { font-size: 20px; color: var(--h-text); }
+        .play-card p { color: var(--h-muted); font-size: 13px; margin: 6px 0 16px; line-height: 1.6; }
+        .play-deco { position: absolute; font-size: 56px; opacity: .13; user-select: none; pointer-events: none; }
+        .pd1 { top: -4px; right: -8px; } .pd2 { bottom: -14px; left: 6px; transform: rotate(-18deg); } .pd3 { top: 26px; left: -18px; transform: rotate(20deg); } .pd4 { bottom: -6px; right: 14px; font-size: 40px; }
+        .btn-play {
+            display: inline-flex; align-items: center; gap: 8px; padding: 14px 30px; border-radius: 14px; border: none; cursor: pointer;
+            font-size: 16px; font-weight: 800; color: #fff; position: relative; z-index: 1;
+            background: linear-gradient(135deg, var(--h-purple), var(--h-purple2));
+            box-shadow: 0 0 24px rgba(139,61,255,.55); transition: .2s;
+        }
+        .btn-play:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 0 34px rgba(139,61,255,.8); }
+
+        .lb-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin-top: 6px; border: 1px solid var(--h-line); border-radius: 12px; background: var(--h-card1); }
+        .lb-row.me { border-color: var(--h-purple); background: rgba(139,61,255,.10); }
+        .rank { width: 26px; text-align: center; font-weight: 900; color: var(--h-muted); }
+        .rank.r1 { color: #FFD32A; } .rank.r2 { color: #CFD6E6; } .rank.r3 { color: #E8924D; }
+        .lb-av { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; background: linear-gradient(135deg, var(--h-orange), var(--h-purple3)); }
+        .lb-name { flex: 1; font-size: 14px; font-weight: 700; color: var(--h-text); }
+        .lb-name small { display: block; font-weight: 400; color: var(--h-muted); font-size: 11px; }
+        .lb-pts { text-align: left; font-size: 12px; color: var(--h-muted); }
+        .lb-pts b { display: block; color: var(--h-lpurple); font-size: 16px; }
+        #screen-home.light .lb-pts b { color: var(--h-purple); }
+        .lb-empty { text-align: center; color: var(--h-muted); font-size: 13px; padding: 20px; }
+
+        .ach-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+        .ach { text-align: center; }
+        .ach.done { border-color: var(--h-ok); }
+        .ach .badge { font-size: 28px; display: block; }
+        .ach.done .badge { filter: drop-shadow(0 0 10px rgba(54,224,160,.6)); }
+        .ach b { display: block; font-size: 14px; margin-top: 8px; color: var(--h-text); }
+        .ach small { font-size: 11px; color: var(--h-muted); display: block; margin: 3px auto 8px; min-height: 26px; line-height: 1.4; }
+        .ach-bar { height: 7px; background: var(--h-bg2); border-radius: 999px; overflow: hidden; border: 1px solid var(--h-line); }
+        .ach-fill { height: 100%; width: 0; border-radius: 999px; background: linear-gradient(90deg, var(--h-purple), var(--h-lpurple)); transition: width .8s ease; }
+        .ach.done .ach-fill { background: linear-gradient(90deg, #10b981, var(--h-ok)); }
+        .ach .cnt { font-size: 10px; color: var(--h-muted); margin-top: 5px; }
+
+        .dash-quote { text-align: center; color: var(--h-muted); font-size: 12px; padding: 26px 14px 6px; line-height: 1.8; }
+
+        .dash-bottom {
+            position: fixed; bottom: 0; right: 0; left: 0; z-index: 50; display: none;
+            grid-template-columns: repeat(4, 1fr);
+            background: rgba(13,10,24,.94); backdrop-filter: blur(12px);
+            border-top: 1px solid var(--h-line); padding: 8px 6px calc(8px + env(safe-area-inset-bottom));
+        }
+        #screen-home.light .dash-bottom { background: rgba(255,255,255,.95); }
+        .bn-item { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10px; color: var(--h-muted); cursor: pointer; padding: 6px; border-radius: 10px; transition: .2s; }
+        .bn-item .nic { font-size: 19px; }
+        .bn-item.active { color: var(--h-purple3); }
+        #screen-home.light .bn-item.active { color: var(--h-purple); }
+
+        @media (max-width: 900px) {
+            .dash-side { display: none; }
+            .dash-bottom { display: grid; }
+            .dash-body { padding: 14px 12px 96px; }
+            .dash-header { padding: 10px 12px; }
+            .stats { grid-template-columns: repeat(2, 1fr); }
+        }
     </style>
 </head>
 <body>
@@ -316,6 +498,93 @@
             <div id="joinMsg" class="msg"></div>
         </div>
         <footer>يعمل كتطبيق PWA — أكمل التثبيت من قائمة المتصفح لإضافته إلى شاشتك الرئيسية 📲</footer>
+    </section>
+
+    <section id="screen-home" class="screen">
+        <div class="dash">
+            <header class="dash-header">
+                <div class="dash-brand" onclick="goHome()">
+                    <div class="dash-logo">H</div>
+                    <div><b>H&amp;A</b><small>رسم · تخمين · فوز</small></div>
+                </div>
+                <div class="dash-header-right">
+                    <button class="dash-icon-btn" id="notifBtn" title="الإشعارات" onclick="showHomeMsg('لا توجد إشعارات جديدة حالياً 📭')">🔔</button>
+                    <div class="user-chip" id="userChip" onclick="toggleUserDrop()">
+                        <div class="dash-avatar" id="homeAvatar">؟</div>
+                        <span class="uname" id="homeUser">—</span>
+                        <span class="caret">▼</span>
+                        <div class="user-drop" id="userDrop">
+                            <div class="drop-item" onclick="goSection('dashStats')">📊 إحصائياتي</div>
+                            <div class="drop-item" onclick="goSection('dashAch')">🏆 إنجازاتي</div>
+                            <div class="drop-item" onclick="toggleDashTheme()">🎨 بدّل الثيم</div>
+                            <div class="drop-item logout" onclick="logoutFromHome()">🚪 تسجيل الخروج</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="homeMsg" class="msg hidden" style="position:absolute;top:64px;right:16px;left:16px;text-align:center;z-index:70;background:var(--h-card2);border:1px solid var(--h-line);border-radius:12px;padding:10px;font-size:13px;color:var(--h-text2)"></div>
+            </header>
+
+            <div class="dash-body">
+                <aside class="dash-side">
+                    <div class="dash-nav active" data-sec="dashHome" onclick="goSection('dashHome')"><span class="nic">🏠</span> الرئيسية</div>
+                    <div class="dash-nav" data-sec="dashGame" onclick="startFromHome()"><span class="nic">🎮</span> العب</div>
+                    <div class="dash-nav" data-sec="dashAch" onclick="goSection('dashAch')"><span class="nic">🏆</span> الإنجازات</div>
+                    <div class="dash-nav" data-sec="dashStats" onclick="goSection('dashStats')"><span class="nic">👤</span> حسابي</div>
+                    <div class="dash-nav" onclick="toggleDashTheme()"><span class="nic">⚙️</span> الإعدادات</div>
+                </aside>
+
+                <main class="dash-main">
+                    <div id="dashHome" class="dash-section">
+                        <div class="h-card welcome" id="welcomeCard">
+                            <div class="dash-avatar" id="welcomeAvatar">؟</div>
+                            <div class="welcome-info">
+                                <h2>مرحباً، <span id="welcomeName">—</span> 💜</h2>
+                                <p>سعيد جداً بعودتك إلى H&amp;A<br>استعد لرسم، تخمين، والفوز!</p>
+                            </div>
+                            <div class="welcome-xp">
+                                <span class="level-badge" id="welcomeLevel">⭐ المستوى 1</span>
+                                <div class="xp-bar"><div class="xp-fill" id="welcomeXpFill"></div></div>
+                                <div class="xp-txt" id="welcomeXpText">0 / 0 XP</div>
+                            </div>
+                        </div>
+
+                        <div class="sec-title" id="dashStats">📊 إحصائياتك <small>من حسابك الحقيقي</small></div>
+                        <div class="stats">
+                            <div class="h-card stat"><span class="sic">🎮</span><b id="stGames">0</b><span>إجمالي الألعاب</span></div>
+                            <div class="h-card stat"><span class="sic">🏆</span><b id="stWins">0</b><span>مرات الفوز</span></div>
+                            <div class="h-card stat"><span class="sic">⭐</span><b id="stPoints">0</b><span>النقاط الكلية</span></div>
+                            <div class="h-card stat"><span class="sic">🔥</span><b id="stStreak">0</b><span>سلسلة الفوز</span></div>
+                            <div class="h-card stat"><span class="sic">📈</span><b id="stRate">0%</b><span>نسبة الفوز</span></div>
+                        </div>
+
+                        <div class="h-card play-card" onclick="startFromHome()" style="cursor:pointer">
+                            <span class="play-deco pd1">✏️</span>
+                            <span class="play-deco pd2">🖼️</span>
+                            <span class="play-deco pd3">❓</span>
+                            <span class="play-deco pd4">🎮</span>
+                            <h3>جاهز للعب؟</h3>
+                            <p>انضم إلى غرفة جديدة أو أنشئ غرفتك الخاصة<br>وابدأ المتعة!</p>
+                            <button class="btn-play">▶ ابدأ اللعب</button>
+                        </div>
+
+                        <div class="sec-title">🏆 قائمة الأبطال <small>أعلى النقاط</small></div>
+                        <div id="leaderboardList" class="lb-list"><div class="lb-empty">جارٍ تحميل الأبطال...</div></div>
+
+                        <div class="sec-title" id="dashAch" style="margin-top:26px">🏆 الإنجازات <small>تقدمك الحقيقي</small></div>
+                        <div class="ach-grid" id="achGrid"><div class="lb-empty">جارٍ التحميل...</div></div>
+
+                        <div class="dash-quote">كل لوحة تبدأ بفكرة.. وكل فكرة قد تكون فوزاً! ♡</div>
+                    </div>
+                </main>
+            </div>
+
+            <nav class="dash-bottom">
+                <div class="bn-item active" onclick="goSection('dashHome')"><span class="nic">🏠</span>الرئيسية</div>
+                <div class="bn-item" onclick="startFromHome()"><span class="nic">🎮</span>العب</div>
+                <div class="bn-item" onclick="goSection('dashAch')"><span class="nic">🏆</span>الإنجازات</div>
+                <div class="bn-item" onclick="goSection('dashStats')"><span class="nic">👤</span>حسابي</div>
+            </nav>
+        </div>
     </section>
 
     <section id="screen-game" class="screen">
@@ -530,6 +799,7 @@
                 else myUser = null;
             } catch (e) { myUser = null; }
             renderAccountUI();
+            return !!myUser;
         }
 
         async function ensureProfile() {
@@ -545,16 +815,20 @@
             } catch (e) {}
         }
 
-        async function recordResult(won, pts) {
+        async function recordResult(won, pts, info) {
             if (!accountOK() || !myUser) return;
+            info = info || {};
             try {
-                const { data: row } = await sb.from('profiles').select('wins,losses,games_played,total_points,best_points').eq('id', myUser.id).single();
-                const p = row || { wins: 0, losses: 0, games_played: 0, total_points: 0, best_points: 0 };
+                const { data: row } = await sb.from('profiles').select('wins,losses,games_played,total_points,best_points,current_streak,best_streak,drawn_words').eq('id', myUser.id).single();
+                const p = row || { wins: 0, losses: 0, games_played: 0, total_points: 0, best_points: 0, current_streak: 0, best_streak: 0, drawn_words: 0 };
                 const wins = (p.wins || 0) + (won ? 1 : 0);
                 const losses = (p.losses || 0) + (won ? 0 : 1);
                 const total = (p.total_points || 0) + (pts || 0);
                 const best = Math.max(p.best_points || 0, total);
-                await sb.from('profiles').update({ wins, losses, games_played: (p.games_played || 0) + 1, total_points: total, best_points: best }).eq('id', myUser.id);
+                const streak = won ? ((p.current_streak || 0) + 1) : 0;
+                const bestStreak = Math.max(p.best_streak || 0, streak);
+                const drawn = (p.drawn_words || 0) + (info.drew ? 1 : 0);
+                await sb.from('profiles').update({ wins, losses, games_played: (p.games_played || 0) + 1, total_points: total, best_points: best, current_streak: streak, best_streak: bestStreak, drawn_words: drawn }).eq('id', myUser.id);
             } catch (e) { console.warn('record result', e.message); }
         }
 
@@ -580,6 +854,7 @@
                 $('nameInput').value = name;
                 renderAccountUI();
                 accMsg('تم إنشاء حسابك! أهلاً ' + name, true);
+                setTimeout(() => goHome(), 600);
             } catch (e) { accMsg('تعذر إنشاء الحساب، حاول مجدداً', false); }
         }
 
@@ -606,6 +881,7 @@
                 $('nameInput').value = uname;
                 renderAccountUI();
                 accMsg('مرحباً بعودتك ' + uname + '!', true);
+                setTimeout(() => goHome(), 600);
             } catch (e) { accMsg('تعذر تسجيل الدخول، حاول مجدداً', false); }
         }
 
@@ -628,7 +904,7 @@
             } catch (e) { accMsg('تعذر فتح نافذة جوجل، حاول مجدداً', false); }
         }
 
-        refreshUserEmail();
+        refreshUserEmail().then((ok) => { if (ok) goHome(); });
         // ================== الشاشات ==================
         function showMsg(text, type) {
             const el = $('joinMsg');
@@ -674,7 +950,9 @@
         }
 
         function openGame() {
+            document.body.classList.remove('on-home');
             $('screen-join').classList.remove('active');
+            $('screen-home').classList.remove('active');
             $('screen-game').classList.add('active');
             $('roomCode').textContent = room.id;
             resetCanvas();
@@ -1074,6 +1352,232 @@
             }
         }
 
+        // ================== الداشبورد الرئيسية ==================
+        let cachedHome = null;
+
+        function initialOf(name) {
+            const s = (name || '؟').trim();
+            return s.charAt(0) || '؟';
+        }
+
+        function showHomeMsg(t) {
+            const el = $('homeMsg');
+            if (el) { el.textContent = t; el.classList.remove('hidden'); setTimeout(() => el.classList.add('hidden'), 3500); }
+            else if (navigator.vibrate) navigator.vibrate(20);
+        }
+
+        function toggleUserDrop() {
+            const d = $('userDrop');
+            if (d) d.classList.toggle('open');
+        }
+        document.addEventListener('click', (e) => {
+            const d = $('userDrop');
+            if (d && d.classList.contains('open') && !e.target.closest('.user-chip')) d.classList.remove('open');
+        });
+
+        function toggleDashTheme() {
+            const h = $('screen-home');
+            const on = h.classList.toggle('light');
+            try { localStorage.setItem('hna-theme', on ? 'light' : 'dark'); } catch (e) {}
+        }
+
+        function applySavedTheme() {
+            const h = $('screen-home');
+            if (!h) return;
+            let t = 'dark';
+            try { t = localStorage.getItem('hna-theme') || 'dark'; } catch (e) {}
+            h.classList.toggle('light', t === 'light');
+        }
+
+        function goSection(id) {
+            if (id === 'dashHome') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                const t = $(id);
+                if (t) {
+                    const y = t.getBoundingClientRect().top + window.scrollY - 90;
+                    window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+                }
+            }
+        }
+
+        function resetWelcome() {
+            const w = $('welcomeCard');
+            if (w) w.style.display = '';
+        }
+
+        function goHome() {
+            resetWelcome();
+            applySavedTheme();
+            document.body.classList.add('on-home');
+            $('screen-join').classList.remove('active');
+            $('screen-game').classList.remove('active');
+            $('screen-home').classList.add('active');
+            window.scrollTo({ top: 0 });
+            if (accountOK()) renderHome();
+            else showScreenLogin();
+        }
+
+        function showScreenLogin() {
+            document.body.classList.remove('on-home');
+            $('screen-home').classList.remove('active');
+            $('screen-game').classList.remove('active');
+            $('screen-join').classList.add('active');
+            window.scrollTo({ top: 0 });
+        }
+
+        function startFromHome() {
+            const name = (($('nameInput') && $('nameInput').value) || myUser && myUser.name || '').trim();
+            if (name) $('nameInput').value = name;
+            resetWelcome();
+            showScreenLogin();
+            if ($('roomInput')) $('roomInput').focus();
+        }
+
+        async function loadHomeStats() {
+            if (!accountOK() || !sb) return null;
+            const five = 60 * 1000;
+            if (cachedHome && (Date.now() - cachedHome.t) < five) return cachedHome.d;
+            const { data, error } = await sb.from('profiles').select('wins,losses,games_played,total_points,best_points,current_streak,best_streak,drawn_words').eq('id', myUser.id).maybeSingle();
+            const d = error ? {} : (data || {});
+            cachedHome = { t: Date.now(), d };
+            return d;
+        }
+
+        async function fetchProfileA() {
+            if (!sb || !myUser) return {};
+            try {
+                const { data, error } = await sb.from('profiles').select('username,display_name,wins,losses,games_played,total_points,best_points').eq('id', myUser.id).maybeSingle();
+                if (!error) return data || {};
+            } catch (e) {}
+            return {};
+        }
+
+        function xpInfo(p) {
+            const games = p.games_played || 0;
+            const wins = p.wins || 0;
+            const pts = p.total_points || 0;
+            const xp = games * 20 + wins * 30 + pts;
+            let level = 1; let cur = 0; let need = 100;
+            const table = [[1,0],[2,100],[3,250],[4,450],[5,700],[6,1000],[7,1400],[8,1900],[9,2500],[10,3200],[11,4000],[12,5000]];
+            for (let i = table.length - 1; i >= 0; i--) {
+                if (xp >= table[i][1]) { level = table[i][0]; cur = table[i][1]; break; }
+            }
+            for (let i = 0; i < table.length; i++) {
+                if (table[i][0] === level + 1) { need = table[i][1]; break; }
+            }
+            if (!need || need <= cur) need = cur + 500;
+            const pct = Math.min(100, Math.round(((xp - cur) / (need - cur)) * 100));
+            return { level, xp, cur, need, pct };
+        }
+
+        async function renderHome() {
+            if (!accountOK()) { showScreenLogin(); return; }
+            try {
+                const profile = await loadHomeStats();
+                const name = myUser.name || myUser.email || 'لاعب';
+                $('homeAvatar').textContent = initialOf(name);
+                $('homeUser').textContent = name;
+                $('welcomeAvatar').textContent = initialOf(name);
+                $('welcomeName').textContent = name;
+
+                const xi = xpInfo(profile);
+                $('welcomeLevel').textContent = '⭐ المستوى ' + xi.level;
+                $('welcomeXpFill').style.width = '0%';
+                requestAnimationFrame(() => { requestAnimationFrame(() => { $('welcomeXpFill').style.width = xi.pct + '%'; }); });
+                $('welcomeXpText').textContent = xi.xp + ' / ' + xi.need + ' XP';
+
+                const games = profile.games_played || 0;
+                const wins = profile.wins || 0;
+                $('stGames').textContent = games;
+                $('stWins').textContent = wins;
+                $('stPoints').textContent = profile.total_points || 0;
+                $('stStreak').textContent = profile.current_streak || 0;
+                const rate = games ? Math.round((wins / games) * 100) : 0;
+                $('stRate').textContent = rate + '%';
+
+                renderLeaderboard();
+                renderAchievements(profile);
+            } catch (e) { console.warn('renderHome', e); }
+        }
+
+        async function renderLeaderboard() {
+            const box = $('leaderboardList');
+            if (!box) return;
+            box.innerHTML = '<div class="lb-empty">جارٍ تحميل الأبطال...</div>';
+            try {
+                const { data, error } = await sb.from('profiles')
+                    .select('username,display_name,wins,total_points,games_played')
+                    .not('username', 'is', null)
+                    .order('total_points', { ascending: false })
+                    .limit(6);
+                if (error) { box.innerHTML = '<div class="lb-empty">تعذر تحميل القائمة</div>'; return; }
+                const list = (data || []).filter((p) => p.username && p.username !== 'system');
+                if (!list.length) { box.innerHTML = '<div class="lb-empty">لا يوجد أبطال بعد — كن أول من يبدأ!</div>'; return; }
+                const ranks = ['r1', 'r2', 'r3', '', '', ''];
+                box.innerHTML = list.map((p, i) => {
+                    const nm = p.display_name || p.username;
+                    const initial = initialOf(nm);
+                    const me = myUser && p.username === (myUser.name || '');
+                    return '<div class="lb-row' + (me ? ' me' : '') + '">' +
+                        '<span class="rank ' + (ranks[i] || '') + '">' + (i + 1) + '</span>' +
+                        '<span class="lb-av">' + initial + '</span>' +
+                        '<span class="lb-name">' + escapeHtml(nm) + (me ? ' (أنت)' : '') + '<small>' + (p.wins || 0) + ' فوزاً · ' + (p.games_played || 0) + ' لعبة</small></span>' +
+                        '<span class="lb-pts"><b>' + (p.total_points || 0) + '</b>نقطة</span>' +
+                        '</div>';
+                }).join('');
+            } catch (e) { box.innerHTML = '<div class="lb-empty">تعذر تحميل القائمة</div>'; }
+        }
+
+        function renderAchievements(p) {
+            const box = $('achGrid');
+            if (!box) return;
+            const games = p.games_played || 0;
+            const wins = p.wins || 0;
+            const bestStreak = p.best_streak || 0;
+            const drawn = p.drawn_words || 0;
+            const ach = [
+                { badge: '🎖️', t: 'البداية', s: 'العب أول لعبة', cur: Math.min(games, 1), max: 1 },
+                { badge: '🤝', t: 'لعبة جماعية', s: 'العب 10 ألعاب', cur: Math.min(games, 10), max: 10 },
+                { badge: '🔥', t: 'سلسلة الفوز', s: 'حقق 3 انتصارات متتالية', cur: Math.min(bestStreak, 3), max: 3 },
+                { badge: '🎨', t: 'فنان مبدع', s: 'ارسم 50 كلمة', cur: Math.min(drawn, 50), max: 50 }
+            ];
+            box.innerHTML = ach.map((a) => {
+                const done = a.cur >= a.max;
+                const pct = Math.round((a.cur / a.max) * 100);
+                return '<div class="h-card ach' + (done ? ' done' : '') + '">' +
+                    '<span class="badge">' + a.badge + '</span>' +
+                    '<b>' + a.t + '</b>' +
+                    '<small>' + a.s + '</small>' +
+                    '<div class="ach-bar"><div class="ach-fill" data-w="' + pct + '" style="width:0%"></div></div>' +
+                    '<div class="cnt">' + (done ? 'مكتمل ✓' : a.cur + ' / ' + a.max) + '</div>' +
+                    '</div>';
+            }).join('');
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    box.querySelectorAll('.ach-fill').forEach((f) => { f.style.width = f.dataset.w + '%'; });
+                });
+            });
+        }
+
+        function escapeHtml(s) {
+            const d = document.createElement('div');
+            d.textContent = s || '';
+            return d.innerHTML;
+        }
+
+        function logoutFromHome() {
+            logoutAccount().then(() => {
+                document.body.classList.remove('on-home');
+                $('screen-home').classList.remove('active');
+                $('screen-game').classList.remove('active');
+                $('screen-join').classList.add('active');
+                window.scrollTo({ top: 0 });
+                $('accountForm').style.display = 'none';
+                showMsg('سجّلت خروجك. يمكنك تسجيل الدخول مجدداً لتتبع فوزك ونقاطك.', 'ok');
+            });
+        }
+
         // ================== أحداث السيرفر ==================
         socket.on('connect', () => { myId = socket.id; });
         socket.on('disconnect', () => status('انقطع الاتصال بالسيرفر...', 'error'));
@@ -1176,7 +1680,7 @@
             scores = data.scores || scores;
             names = data.names || names;
             const iWon = data.guesserId === myId;
-            if (accountOK()) recordResult(iWon, iWon ? 1 : 0);
+            if (accountOK()) recordResult(iWon, iWon ? 1 : 0, { drew: room && room.role === 'drawer' });
             $('overlayIcon').textContent = iWon ? '🥳' : '😅';
             $('overlayTitle').textContent = iWon ? 'مبروك! إجابة صحيحة' : 'خصمك عرف الكلمة!';
             $('overlayWord').textContent = data.word;
@@ -1196,7 +1700,7 @@
             scores = data.scores || scores;
             names = data.names || names;
             const iAmDrawer = room.role === 'drawer';
-            if (accountOK()) recordResult(iAmDrawer, iAmDrawer ? 1 : 0);
+            if (accountOK()) recordResult(iAmDrawer, iAmDrawer ? 1 : 0, { drew: iAmDrawer });
             $('overlayIcon').textContent = iAmDrawer ? '😏' : '⏰';
             $('overlayTitle').textContent = 'انتهى الوقت!';
             $('overlayWord').textContent = data.word;
