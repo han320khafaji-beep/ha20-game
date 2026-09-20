@@ -441,6 +441,12 @@
             .dash-body { padding: 14px 12px 96px; }
             .dash-header { padding: 10px 12px; }
             .stats { grid-template-columns: repeat(2, 1fr); }
+            .welcome { gap: 12px; }
+            .welcome .dash-avatar { width: 52px; height: 52px; font-size: 22px; }
+            .welcome-info h2 { font-size: 18px; }
+            .welcome-xp { min-width: 100%; text-align: right; }
+            .sec-title { font-size: 14px; }
+            .uname { display: none; }
         }
     </style>
 </head>
@@ -530,7 +536,7 @@
                     <div class="dash-nav" data-sec="dashGame" onclick="startFromHome()"><span class="nic">🎮</span> العب</div>
                     <div class="dash-nav" data-sec="dashAch" onclick="goSection('dashAch')"><span class="nic">🏆</span> الإنجازات</div>
                     <div class="dash-nav" data-sec="dashStats" onclick="goSection('dashStats')"><span class="nic">👤</span> حسابي</div>
-                    <div class="dash-nav" onclick="toggleDashTheme()"><span class="nic">⚙️</span> الإعدادات</div>
+                    <div class="dash-nav" data-sec="dashTheme" onclick="toggleDashTheme()"><span class="nic">⚙️</span> الإعدادات</div>
                 </aside>
 
                 <main class="dash-main">
@@ -579,10 +585,10 @@
             </div>
 
             <nav class="dash-bottom">
-                <div class="bn-item active" onclick="goSection('dashHome')"><span class="nic">🏠</span>الرئيسية</div>
-                <div class="bn-item" onclick="startFromHome()"><span class="nic">🎮</span>العب</div>
-                <div class="bn-item" onclick="goSection('dashAch')"><span class="nic">🏆</span>الإنجازات</div>
-                <div class="bn-item" onclick="goSection('dashStats')"><span class="nic">👤</span>حسابي</div>
+                <div class="bn-item active" data-sec="dashHome" onclick="goSection('dashHome')"><span class="nic">🏠</span>الرئيسية</div>
+                <div class="bn-item" data-sec="dashGame" onclick="startFromHome()"><span class="nic">🎮</span>العب</div>
+                <div class="bn-item" data-sec="dashAch" onclick="goSection('dashAch')"><span class="nic">🏆</span>الإنجازات</div>
+                <div class="bn-item" data-sec="dashStats" onclick="goSection('dashStats')"><span class="nic">👤</span>حسابي</div>
             </nav>
         </div>
     </section>
@@ -904,7 +910,7 @@
             } catch (e) { accMsg('تعذر فتح نافذة جوجل، حاول مجدداً', false); }
         }
 
-        refreshUserEmail().then((ok) => { if (ok) goHome(); });
+        refreshUserEmail().then((ok) => { if (ok && !new URLSearchParams(location.search).get('room')) goHome(); });
         // ================== الشاشات ==================
         function showMsg(text, type) {
             const el = $('joinMsg');
@@ -950,6 +956,7 @@
         }
 
         function openGame() {
+            cachedHome = null;
             document.body.classList.remove('on-home');
             $('screen-join').classList.remove('active');
             $('screen-home').classList.remove('active');
@@ -1360,6 +1367,28 @@
             return s.charAt(0) || '؟';
         }
 
+        function avatarGrad(name) {
+            const palettes = [
+                ['#FF8C1A', '#8B3DFF'],
+                ['#36E0A0', '#1e90ff'],
+                ['#FF4757', '#FF8C1A'],
+                ['#C084FC', '#6a1fd0'],
+                ['#FFD32A', '#FF5E00'],
+                ['#2ed573', '#8B3DFF']
+            ];
+            let h = 0;
+            const s = String(name || '');
+            for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 997;
+            const p = palettes[h % palettes.length];
+            return 'linear-gradient(135deg, ' + p[0] + ', ' + p[1] + ')';
+        }
+
+        function paintAvatars(name) {
+            const els = document.querySelectorAll('.dash-avatar');
+            const gr = avatarGrad(name);
+            els.forEach((el) => el.style.background = gr);
+        }
+
         function showHomeMsg(t) {
             const el = $('homeMsg');
             if (el) { el.textContent = t; el.classList.remove('hidden'); setTimeout(() => el.classList.add('hidden'), 3500); }
@@ -1389,7 +1418,13 @@
             h.classList.toggle('light', t === 'light');
         }
 
+        function setActiveNav(id) {
+            document.querySelectorAll('.dash-nav').forEach((n) => n.classList.toggle('active', n.dataset.sec === id));
+            document.querySelectorAll('.bn-item').forEach((n) => n.classList.toggle('active', n.dataset.sec === id));
+        }
+
         function goSection(id) {
+            setActiveNav(id);
             if (id === 'dashHome') {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             } else {
@@ -1471,6 +1506,11 @@
             return { level, xp, cur, need, pct };
         }
 
+        function fmtNum(n) {
+            n = n || 0;
+            return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+
         async function renderHome() {
             if (!accountOK()) { showScreenLogin(); return; }
             try {
@@ -1480,19 +1520,20 @@
                 $('homeUser').textContent = name;
                 $('welcomeAvatar').textContent = initialOf(name);
                 $('welcomeName').textContent = name;
+                paintAvatars(name);
 
                 const xi = xpInfo(profile);
                 $('welcomeLevel').textContent = '⭐ المستوى ' + xi.level;
                 $('welcomeXpFill').style.width = '0%';
                 requestAnimationFrame(() => { requestAnimationFrame(() => { $('welcomeXpFill').style.width = xi.pct + '%'; }); });
-                $('welcomeXpText').textContent = xi.xp + ' / ' + xi.need + ' XP';
+                $('welcomeXpText').textContent = fmtNum(xi.xp) + ' / ' + fmtNum(xi.need) + ' XP';
 
                 const games = profile.games_played || 0;
                 const wins = profile.wins || 0;
-                $('stGames').textContent = games;
-                $('stWins').textContent = wins;
-                $('stPoints').textContent = profile.total_points || 0;
-                $('stStreak').textContent = profile.current_streak || 0;
+                $('stGames').textContent = fmtNum(games);
+                $('stWins').textContent = fmtNum(wins);
+                $('stPoints').textContent = fmtNum(profile.total_points || 0);
+                $('stStreak').textContent = fmtNum(profile.current_streak || 0);
                 const rate = games ? Math.round((wins / games) * 100) : 0;
                 $('stRate').textContent = rate + '%';
 
@@ -1521,9 +1562,9 @@
                     const me = myUser && p.username === (myUser.name || '');
                     return '<div class="lb-row' + (me ? ' me' : '') + '">' +
                         '<span class="rank ' + (ranks[i] || '') + '">' + (i + 1) + '</span>' +
-                        '<span class="lb-av">' + initial + '</span>' +
+                        '<span class="lb-av" style="background:' + avatarGrad(nm) + '">' + initial + '</span>' +
                         '<span class="lb-name">' + escapeHtml(nm) + (me ? ' (أنت)' : '') + '<small>' + (p.wins || 0) + ' فوزاً · ' + (p.games_played || 0) + ' لعبة</small></span>' +
-                        '<span class="lb-pts"><b>' + (p.total_points || 0) + '</b>نقطة</span>' +
+                        '<span class="lb-pts"><b>' + fmtNum(p.total_points || 0) + '</b>نقطة</span>' +
                         '</div>';
                 }).join('');
             } catch (e) { box.innerHTML = '<div class="lb-empty">تعذر تحميل القائمة</div>'; }
@@ -1577,6 +1618,21 @@
                 showMsg('سجّلت خروجك. يمكنك تسجيل الدخول مجدداً لتتبع فوزك ونقاطك.', 'ok');
             });
         }
+
+        // تحديث حالة التنقل حسب موضع التمرير
+        let dashSpy = null;
+        window.addEventListener('scroll', () => {
+            if (!document.body.classList.contains('on-home')) return;
+            if (dashSpy) clearTimeout(dashSpy);
+            dashSpy = setTimeout(() => {
+                const stats = $('dashStats'), ach = $('dashAch');
+                const top = window.scrollY + 140;
+                let cur = 'dashHome';
+                if (ach && stats && top >= ach.getBoundingClientRect().top + window.scrollY) cur = 'dashAch';
+                else if (stats && top >= stats.getBoundingClientRect().top + window.scrollY) cur = 'dashStats';
+                setActiveNav(cur);
+            }, 100);
+        }, { passive: true });
 
         // ================== أحداث السيرفر ==================
         socket.on('connect', () => { myId = socket.id; });
